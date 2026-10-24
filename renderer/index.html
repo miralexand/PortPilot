@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PortPilot</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="brand">
+          <img class="brand-icon" src="../assets/icon.png" alt="" width="38" height="38" />
+          <div class="brand-text">
+            <strong>PortPilot</strong>
+            <span>TCP 转发控制台</span>
+          </div>
+        </div>
+
+        <nav class="nav" aria-label="主导航">
+          <button class="nav-item is-active" type="button" data-view="rules">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 7h9" /><path d="M19 7h1" /><circle cx="16" cy="7" r="2.2" />
+              <path d="M4 17h1" /><path d="M11 17h9" /><circle cx="8" cy="17" r="2.2" />
+            </svg>
+            <span>转发规则</span>
+            <em class="nav-badge" id="navRuleCount">0</em>
+          </button>
+          <button class="nav-item" type="button" data-view="logs">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="4" width="18" height="16" rx="2.5" />
+              <path d="m7 9 3 3-3 3" /><path d="M13 15h4" />
+            </svg>
+            <span>运行日志</span>
+          </button>
+          <button class="nav-item" type="button" data-view="settings">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 6h8" /><path d="M16 6h4" /><circle cx="14" cy="6" r="2" />
+              <path d="M4 12h3" /><path d="M11 12h9" /><circle cx="9" cy="12" r="2" />
+              <path d="M4 18h10" /><path d="M18 18h2" /><circle cx="16" cy="18" r="2" />
+            </svg>
+            <span>设置</span>
+          </button>
+        </nav>
+
+        <div class="sidebar-spacer"></div>
+        <div class="service-mini" id="serviceMini"></div>
+        <div class="sidebar-footer">
+          <span>PortPilot</span>
+          <span id="appVersion">v–</span>
+        </div>
+      </aside>
+
+      <main class="main" id="main">
+        <section class="view is-active" id="view-rules">
+          <header class="page-header">
+            <div>
+              <p class="eyebrow">FORWARDING</p>
+              <h1>TCP 转发规则</h1>
+              <p class="page-sub">其他人访问源网卡的地址和端口，由 HAProxy 转发到目标地址或本机另一块网卡。</p>
+            </div>
+            <button class="btn btn-primary" type="button" data-action="add-rule">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14" /><path d="M5 12h14" /></svg>
+              添加规则
+            </button>
+          </header>
+
+          <div id="serviceBanner"></div>
+
+          <div class="stats-grid" id="statsGrid"></div>
+
+          <section class="panel rules-panel">
+            <div class="panel-heading">
+              <div>
+                <h2>规则列表</h2>
+                <p id="ruleSummary">正在加载…</p>
+              </div>
+              <div class="panel-actions">
+                <button class="btn btn-ghost btn-sm" type="button" data-action="refresh-interfaces">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M20 11a8 8 0 1 0-2.3 5.7" /><path d="M20 4v7h-7" />
+                  </svg>
+                  刷新网卡
+                </button>
+                <button class="btn btn-secondary btn-sm" type="button" data-action="add-rule">新建规则</button>
+              </div>
+            </div>
+            <div id="rulesList" class="rules-list">
+              <div class="skeleton-list">
+                <div class="skeleton"></div>
+                <div class="skeleton"></div>
+              </div>
+            </div>
+          </section>
+        </section>
+
+        <section class="view" id="view-logs">
+          <header class="page-header">
+            <div>
+              <p class="eyebrow">DIAGNOSTICS</p>
+              <h1>运行日志</h1>
+              <p class="page-sub">HAProxy 与 PortPilot 的运行事件，方便排查端口和连通性问题。</p>
+            </div>
+            <div class="header-actions">
+              <button class="btn btn-ghost" type="button" data-action="open-data-dir">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z" /></svg>
+                数据目录
+              </button>
+              <button class="btn btn-secondary" type="button" data-action="clear-logs">清空日志</button>
+            </div>
+          </header>
+          <section class="panel log-panel">
+            <div class="log-toolbar">
+              <label class="checkbox-label">
+                <input type="checkbox" id="logAutoScroll" checked />
+                <span>自动滚动</span>
+              </label>
+              <span class="muted" id="logCount">0 条日志</span>
+            </div>
+            <div class="log-view" id="logView">
+              <div class="log-empty">暂无日志。启动转发服务后，这里会显示 HAProxy 的运行输出。</div>
+            </div>
+          </section>
+        </section>
+
+        <section class="view" id="view-settings">
+          <header class="page-header">
+            <div>
+              <p class="eyebrow">PREFERENCES</p>
+              <h1>设置</h1>
+              <p class="page-sub">调整 PortPilot 的启动方式和托盘行为。</p>
+            </div>
+          </header>
+          <div id="settingsContent"></div>
+        </section>
+      </main>
+    </div>
+
+    <div id="modalRoot"></div>
+    <div class="toast-root" id="toastRoot" aria-live="polite"></div>
+
+    <div class="app-loading" id="appLoading">
+      <div class="loading-mark"></div>
+      <div>
+        <strong>正在启动 PortPilot</strong>
+        <span>正在读取转发规则…</span>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

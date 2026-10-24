@@ -1,0 +1,23 @@
+HAProxy for Windows
+===================
+
+Bundled version: HAProxy 3.2.23
+Source code: https://www.haproxy.org/download/3.2/src/haproxy-3.2.23.tar.gz
+Windows build: https://github.com/xjoker/HAProxyForWindows/releases/tag/v3.2.23
+Build asset: haproxy-3.2.23-win64.zip
+Build asset SHA-256: 22A79366CFE44CC7AFAF85AE6329331FAE7F82EEFF47C4F4A96450E7BA6989F9
+Runtime: Cygwin x86_64
+
+HAProxy is licensed under the GNU General Public License version 2, with the
+OpenSSL linking exception described in the LICENSE file. See LICENSE and
+COPYING in this directory.
+
+The Cygwin runtime, OpenSSL, PCRE2, zlib and Lua shared libraries are
+distributed under their respective licenses. Their source and license
+information is available from:
+
+- https://cygwin.com/
+- https://www.openssl.org/
+- https://github.com/PCRE2Project/pcre2
+- https://zlib.net/
+- https://www.lua.org/

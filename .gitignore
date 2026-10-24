@@ -1,0 +1,14 @@
+node_modules/
+dist/
+out/
+*.log
+.DS_Store
+Thumbs.db
+test/.tmp/
+opencode.json
+opencode.jsonc
+.opencode/
+.env
+.env.*
+.vscode/
+.idea/

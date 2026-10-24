@@ -1,0 +1,66 @@
+{
+  "name": "portpilot",
+  "version": "1.0.0",
+  "description": "Windows tray app for managing HAProxy TCP forwarding rules",
+  "main": "electron/main.js",
+  "author": "PortPilot",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "postinstall": "node node_modules/electron/install.js",
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "test": "node --test test/unit/*.test.js",
+    "test:e2e": "node test/e2e-forwarding.js",
+    "test:ui": "node test/smoke-ui.js",
+    "pack": "electron-builder --win --dir",
+    "dist": "electron-builder --win nsis portable"
+  },
+  "devDependencies": {
+    "electron": "44.9.3",
+    "electron-builder": "26.18.0"
+  },
+  "build": {
+    "appId": "com.portpilot.desktop",
+    "productName": "PortPilot",
+    "copyright": "Copyright © 2026 PortPilot",
+    "directories": {
+      "output": "dist",
+      "buildResources": "assets"
+    },
+    "files": [
+      "electron/**/*",
+      "renderer/**/*",
+      "assets/icon.ico",
+      "assets/icon.png",
+      "assets/tray.png",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "resources/haproxy",
+        "to": "haproxy"
+      }
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "assets/icon.ico",
+      "artifactName": "${productName}-${version}-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "PortPilot",
+      "uninstallDisplayName": "PortPilot"
+    },
+    "portable": {
+      "artifactName": "${productName}-${version}-portable.${ext}"
+    }
+  }
+}
