@@ -14,7 +14,7 @@
     "test:e2e": "node test/e2e-forwarding.js",
     "test:ui": "node test/smoke-ui.js",
     "pack": "electron-builder --win --dir",
-    "dist": "electron-builder --win nsis portable"
+    "dist": "electron-builder --win nsis portable --publish never"
   },
   "devDependencies": {
     "electron": "44.9.3",
