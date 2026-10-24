@@ -31,33 +31,28 @@ jobs:
         run: npm ci --no-audit --no-fund
 
       - name: Run unit tests
+        timeout-minutes: 5
         run: npm test
 
       - name: Build Windows installers
+        timeout-minutes: 20
         run: npm run dist
 
-      - name: Prepare release assets
-        shell: bash
+      - name: Verify artifacts
+        shell: pwsh
         run: |
-          tag="${GITHUB_REF_NAME}"
-          mv dist/PortPilot-*-x64.exe "dist/PortPilot-${tag}-x64.exe"
-          mv dist/PortPilot-*-portable.exe "dist/PortPilot-${tag}-portable.exe"
-          sha256sum "dist/PortPilot-${tag}-x64.exe" "dist/PortPilot-${tag}-portable.exe" > dist/SHA256SUMS.txt
-          cat dist/SHA256SUMS.txt
+          $tag = $env:GITHUB_REF_NAME
+          $installer = "dist/PortPilot-$tag-x64.exe"
+          $portable = "dist/PortPilot-$tag-portable.exe"
+          Get-ChildItem dist | Select-Object Name, Length
+          if (-not (Test-Path $installer)) { throw "Missing $installer" }
+          if (-not (Test-Path $portable)) { throw "Missing $portable" }
 
       - name: Publish release
-        shell: bash
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          tag="${GITHUB_REF_NAME}"
-          assets=(
-            "dist/PortPilot-${tag}-x64.exe"
-            "dist/PortPilot-${tag}-portable.exe"
-            "dist/SHA256SUMS.txt"
-          )
-          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            gh release upload "$tag" "${assets[@]}" --repo "$GITHUB_REPOSITORY" --clobber
-          else
-            gh release create "$tag" "${assets[@]}" --repo "$GITHUB_REPOSITORY" --title "PortPilot ${tag}" --generate-notes
-          fi
+        uses: softprops/action-gh-release@v2
+        with:
+          name: PortPilot ${{ github.ref_name }}
+          generate_release_notes: true
+          files: |
+            dist/PortPilot-${{ github.ref_name }}-x64.exe
+            dist/PortPilot-${{ github.ref_name }}-portable.exe
