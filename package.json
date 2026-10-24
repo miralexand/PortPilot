@@ -1,6 +1,6 @@
 {
   "name": "portpilot",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Windows tray app for managing HAProxy TCP forwarding rules",
   "main": "electron/main.js",
   "author": "PortPilot",
