@@ -43,6 +43,8 @@
     confirmResolver: null,
     serviceBusy: false,
     logAutoScroll: true,
+    checkingUpdate: false,
+    updateStatus: null,
     lastConfigText: '',
     lastConfigPath: '',
   };
@@ -254,6 +256,15 @@
         break;
       case 'open-haproxy-dir':
         openPath(() => api.openHaproxyDir());
+        break;
+      case 'open-repository':
+        openExternalLink(() => api.openRepository());
+        break;
+      case 'open-releases':
+        openExternalLink(() => api.openReleases());
+        break;
+      case 'check-updates':
+        runUpdateCheck();
         break;
       case 'copy-config':
         copyConfig();
@@ -586,16 +597,96 @@
         </section>
 
         <section class="panel settings-panel wide">
-          <h2>关于 PortPilot</h2>
+          <div class="about-head">
+            <div>
+              <h2>关于 PortPilot</h2>
+              <p>PortPilot 是采用 GPL-2.0-only 许可证开源的 Windows TCP 转发管理工具。</p>
+            </div>
+            <span class="about-tag">HAProxy TCP 转发</span>
+          </div>
           <div class="about-lines">
-            <p><strong>PortPilot v${escapeHtml(appInfo.version || '1.0.0')}</strong> <span class="about-tag">HAProxy TCP 转发</span></p>
+            <p><strong>PortPilot v${escapeHtml(appInfo.version || '1.0.0')}</strong></p>
             <p>规则可转发到任意 IPv4 地址，也可转发到本机另一块网卡的地址，请确认目标地址可信。</p>
             <p>应用退出时会自动停止 HAProxy；关闭窗口时默认仅最小化到系统托盘。</p>
             <p>首次监听网卡端口时，如 Windows 防火墙弹出提示，请允许 HAProxy 访问网络。</p>
           </div>
+          <div class="about-links">
+            <span>仓库</span>
+            <button class="link-button" type="button" data-action="open-repository">https://github.com/miralexand/PortPilot</button>
+            <span class="about-sep">·</span>
+            <span>许可证 GPL-2.0-only</span>
+          </div>
+          <div class="button-row">
+            <button class="btn btn-secondary btn-sm" type="button" data-action="check-updates" ${state.checkingUpdate ? 'disabled' : ''}>${icon('refresh', state.checkingUpdate ? 'is-spinning' : '')} ${state.checkingUpdate ? '正在检查…' : '检查更新'}</button>
+            <button class="btn btn-ghost btn-sm" type="button" data-action="open-repository">${icon('code')} 打开仓库</button>
+          </div>
+          ${renderUpdateStatus()}
         </section>
       </div>
     `;
+  }
+
+  function renderUpdateStatus() {
+    const status = state.updateStatus;
+    if (!status) return '';
+
+    const action = status.action === 'open-releases'
+      ? '<button class="update-link" type="button" data-action="open-releases">前往下载</button>'
+      : '';
+
+    return `
+      <div class="update-status update-status-${escapeHtml(status.type || 'info')}">
+        <span>${escapeHtml(status.message || '')}</span>
+        ${action}
+      </div>
+    `;
+  }
+
+  async function runUpdateCheck() {
+    if (state.checkingUpdate) return;
+
+    state.checkingUpdate = true;
+    state.updateStatus = { type: 'info', message: '正在连接 GitHub 检查更新…' };
+    renderSettings();
+
+    try {
+      const result = await api.checkForUpdates();
+      if (!result || !result.ok) {
+        state.updateStatus = { type: 'error', message: result?.error || '检查更新失败' };
+      } else if (result.noRelease) {
+        state.updateStatus = {
+          type: 'info',
+          message: `仓库尚未发布正式版本，当前为 v${result.currentVersion || '未知'}。`,
+        };
+      } else if (result.hasUpdate) {
+        state.updateStatus = {
+          type: 'success',
+          message: `发现新版本 v${result.latestVersion}（当前 v${result.currentVersion}）。`,
+          action: 'open-releases',
+        };
+      } else {
+        state.updateStatus = {
+          type: 'success',
+          message: `当前已是最新版本 v${result.currentVersion}。`,
+        };
+      }
+    } catch (error) {
+      state.updateStatus = { type: 'error', message: error.message || '检查更新失败' };
+    } finally {
+      state.checkingUpdate = false;
+      renderSettings();
+    }
+  }
+
+  async function openExternalLink(action) {
+    try {
+      const result = await action();
+      if (result && !result.ok) {
+        toast(result.error || '无法打开链接', 'error');
+      }
+    } catch (error) {
+      toast(error.message || '无法打开链接', 'error');
+    }
   }
 
   function settingRow(key, title, description, checked) {

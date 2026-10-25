@@ -1,11 +1,21 @@
 'use strict';
 
 const fs = require('node:fs');
-const { clipboard, shell } = require('electron');
+const { clipboard, net, shell } = require('electron');
 
 const { generateConfig } = require('./lib/config');
 const { listInterfaces, probeTcp } = require('./lib/network');
 const { validateRule } = require('./lib/rules');
+const { checkForUpdates, REPOSITORY_URL, RELEASES_URL } = require('./lib/updates');
+
+async function openExternalUrl(url, fallbackMessage) {
+  try {
+    await shell.openExternal(url);
+    return { ok: true };
+  } catch (error) {
+    return { ok: false, error: error.message || fallbackMessage };
+  }
+}
 
 function registerIpcHandlers(context) {
   const {
@@ -204,6 +214,21 @@ function registerIpcHandlers(context) {
     const error = await shell.openPath(manager.runtimeDir);
     return { ok: !error, error: error || null };
   });
+
+  ipcMain.handle('app:check-updates', () =>
+    checkForUpdates({
+      currentVersion: app.getVersion(),
+      fetchImpl: (url, options) => net.fetch(url, options),
+    })
+  );
+
+  ipcMain.handle('app:open-repository', () =>
+    openExternalUrl(REPOSITORY_URL, '无法打开仓库地址')
+  );
+
+  ipcMain.handle('app:open-releases', () =>
+    openExternalUrl(RELEASES_URL, '无法打开下载页面')
+  );
 
   ipcMain.handle('app:quit', () => {
     quitApp();

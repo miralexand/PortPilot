@@ -371,6 +371,14 @@ async function main() {
     const settingsText = await evaluate("document.getElementById('settingsContent').innerText");
     assert.match(settingsText, /应用启动时自动运行转发/);
     assert.match(settingsText, /HAProxy 运行时/);
+    assert.match(settingsText, /github\.com\/miralexand\/PortPilot/);
+    assert.match(settingsText, /检查更新/);
+    assert.ok(
+      await evaluate(
+        "Boolean(document.querySelector('[data-action=\"check-updates\"]') && document.querySelector('[data-action=\"open-repository\"]'))"
+      ),
+      '关于区域应提供检查更新和仓库入口'
+    );
 
     await evaluate("document.querySelector('[data-action=\"view-config\"]').click()");
     await waitFor("Boolean(document.querySelector('.code-block'))", '打开配置预览弹窗', 5000);
