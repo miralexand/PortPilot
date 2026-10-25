@@ -4,7 +4,7 @@
   "description": "Windows tray app for managing HAProxy TCP forwarding rules",
   "main": "electron/main.js",
   "author": "PortPilot",
-  "license": "MIT",
+  "license": "GPL-2.0-only",
   "private": true,
   "scripts": {
     "postinstall": "node node_modules/electron/install.js",
